@@ -6,8 +6,8 @@ silver  typed, deduplicated, enriched (market prices, approval limits, goods
 gold    supplier feature table, graph edge tables and audit labels
 
 Runs locally or on Databricks:
-  local       python pipeline/spark_pipeline.py
-  Databricks  python pipeline/spark_pipeline.py --base /Volumes/<catalog>/<schema>/<volume> --format delta
+  local       python pipeline/spark_pipeline.py                  (Parquet files under data/)
+  Databricks  notebooks/databricks_pipeline.py                   (Unity Catalog tables)
 """
 import argparse
 from pathlib import Path
@@ -32,15 +32,28 @@ def spark_session() -> SparkSession:
 
 
 class Lake:
-    """Reads and writes medallion layers under one base path."""
+    """Reads and writes medallion layers.
 
-    def __init__(self, spark, base: str, fmt: str):
-        self.spark, self.base, self.fmt = spark, base.rstrip("/"), fmt
+    fmt "parquet" or "delta": files under <base>/<layer>/<name>  (local runs)
+    fmt "uc": Unity Catalog tables named <schema>.<layer>_<name>  (Databricks)
+    Raw CSVs are always read from <base>/raw/.
+    """
+
+    def __init__(self, spark, base: str, fmt: str, schema: str = None):
+        if fmt == "uc" and not schema:
+            raise ValueError("fmt='uc' needs schema, e.g. 'workspace.supplier_risk'")
+        self.spark, self.base, self.fmt, self.schema = spark, base.rstrip("/"), fmt, schema
 
     def write(self, df: DataFrame, layer: str, name: str):
-        df.write.mode("overwrite").format(self.fmt).save(f"{self.base}/{layer}/{name}")
+        w = df.write.mode("overwrite")
+        if self.fmt == "uc":
+            w.option("overwriteSchema", "true").saveAsTable(f"{self.schema}.{layer}_{name}")
+        else:
+            w.format(self.fmt).save(f"{self.base}/{layer}/{name}")
 
     def read(self, layer: str, name: str) -> DataFrame:
+        if self.fmt == "uc":
+            return self.spark.table(f"{self.schema}.{layer}_{name}")
         return self.spark.read.format(self.fmt).load(f"{self.base}/{layer}/{name}")
 
 
