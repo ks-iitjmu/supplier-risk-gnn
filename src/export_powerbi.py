@@ -7,6 +7,9 @@
   scheme_recall.csv      recall per fraud scheme per model, mean and std
   shap_importance.csv    global SHAP importance per XGBoost model
 
+All four tables are also written as sheets of supplier_risk_dashboard.xlsx, which the
+browser version of Power BI loads as one dataset.
+
 Run after run_models.sh:  python src/export_powerbi.py
 """
 import json
@@ -86,6 +89,9 @@ if __name__ == "__main__":
     perf, scheme = run_metrics()
     tables = {"supplier_risk": supplier_risk(), "model_performance": perf,
               "scheme_recall": scheme, "shap_importance": shap_importance()}
-    for name, df in tables.items():
-        df.to_csv(OUT / f"{name}.csv", index=False)
-        print(f"{name:18s} {len(df):>5} rows -> powerbi/data/{name}.csv")
+    with pd.ExcelWriter(OUT / "supplier_risk_dashboard.xlsx") as xl:
+        for name, df in tables.items():
+            df.to_csv(OUT / f"{name}.csv", index=False)
+            df.to_excel(xl, sheet_name=name, index=False)
+            print(f"{name:18s} {len(df):>5} rows")
+    print("written to powerbi/data/ (4 CSVs + supplier_risk_dashboard.xlsx)")

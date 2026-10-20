@@ -13,3 +13,4 @@ shap>=0.44
 matplotlib>=3.7
 torch>=2.2
 torch_geometric>=2.5
+openpyxl>=3.1

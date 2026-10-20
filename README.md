@@ -168,6 +168,19 @@ Best value per column in bold.
 | graphsage | 0.689 ± 0.029 | 0.744 ± 0.136 | 0.608 ± 0.068 | 0.549 ± 0.143 |
 | xgb_hybrid | **0.726 ± 0.032** | 0.746 ± 0.208 | 0.771 ± 0.096 | **0.616 ± 0.115** |
 
+ ## Dashboard (Power BI)
+
+   Built in the Power BI service on the exported tables (`powerbi/data/`). Full report: [PDF](docs/supplier_risk_dashboard.pdf).
+
+   **Review queue**: top 10% of suppliers by risk score, with SHAP reasons. 39 fraudulent suppliers found, 18 of them missed by audits.
+   ![Review queue](docs/powerbi_review_queue.png)
+
+   **Model comparison**: every metric over 5 splits, and recall per fraud scheme.
+   ![Model comparison](docs/powerbi_models.png)
+
+   **Risk drivers**: SHAP importance per model, and supplier patterns by scheme.
+   ![Risk drivers](docs/powerbi_drivers.png)
+
 ## Findings and recommendation
 
 1. **Relational information matters most.** Adding relational features to XGBoost
