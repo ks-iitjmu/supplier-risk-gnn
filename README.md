@@ -226,6 +226,4 @@ run_models.sh   trains every model on 5 splits and writes the comparison
 ```
 
 ## Next steps
-
-- Power BI dashboard: supplier risk ranking, recall by scheme, SHAP drivers
 - GNNExplainer for per-supplier explanations of the graph model
