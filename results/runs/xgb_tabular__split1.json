@@ -1,0 +1,12 @@
+{
+  "pr_auc": 0.36296380988075727,
+  "roc_auc": 0.8413500256241306,
+  "pr_auc_vs_audit_labels": 0.2675656226333325,
+  "precision_at_budget": 0.3,
+  "recall_at_budget": 0.5172413793103449,
+  "recall_shell_ring": 0.5454545454545454,
+  "recall_cartel": 0.5555555555555556,
+  "recall_split": 0.8333333333333334,
+  "recall_inflate": 0.2,
+  "recall_on_fraud_audits_missed": 0.42857142857142855
+}

@@ -1,0 +1,30 @@
+feature,mean_abs_shap
+p90 price ratio,0.68412817
+n buyers,0.5050334
+top buyer share,0.37025696
+unshipped share,0.22756766
+near limit share,0.22201592
+burst share,0.21273912
+total amount,0.18585323
+supplier age days,0.17828098
+mean lost bid gap,0.13943976
+median price ratio,0.13720384
+n bids,0.10997456
+close loss share,0.09187507
+mean bid to estimate,0.08718462
+category Office Supplies,0.059032626
+is service,0.058376677
+n invoices,0.052856136
+category IT Hardware,0.033870522
+win rate,0.026433894
+category Safety Equipment,0.024291962
+n directors,0.02023689
+category Logistics,0.009323151
+category Electrical,0.008711684
+category Electronic Components,0.0066164383
+category Furniture,0.006210307
+category Chemicals,0.0056950804
+category Steel & Metals,0.0044478085
+category Packaging,0.0034118616
+category Facility Services,0.0026272032
+category Industrial Tools,0.0014538697
