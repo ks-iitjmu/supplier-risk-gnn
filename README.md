@@ -99,6 +99,11 @@ bringing the tabular baseline to a PR-AUC of about 0.45.
 `pipeline/spark_pipeline.py` (PySpark) runs locally on Parquet, or on Databricks on
 Delta tables via `notebooks/databricks_pipeline.py`.
 
+**Run on Databricks Free Edition** (serverless, Unity Catalog):
+
+![Pipeline run on Databricks](docs/databricks_run.png)
+![Tables in Unity Catalog](docs/databricks_catalog.png)
+
 | Layer | What happens |
 |---|---|
 | Bronze | raw extracts stored as-is with ingestion time and source file |
@@ -210,5 +215,4 @@ run_models.sh   trains every model on 5 splits and writes the comparison
 ## Next steps
 
 - Power BI dashboard: supplier risk ranking, recall by scheme, SHAP drivers
-- Run the pipeline on Databricks Free Edition and add a screenshot here
 - GNNExplainer for per-supplier explanations of the graph model
