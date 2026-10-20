@@ -75,8 +75,8 @@ class SimConfig:
     frac_inflate: float = 0.012
     n_business_parks: int = 60
     frac_corporate_group: float = 0.06
-    frac_legit_near_limit: float = 0.03
-    frac_legit_new: float = 0.08
+    frac_legit_near_limit: float = 0.06
+    frac_legit_new: float = 0.15
 
 
 class Simulator:
@@ -106,6 +106,9 @@ class Simulator:
                       .replace("Sector", r.choice(["Sec", "Sec."]))
                       .replace("Phase", r.choice(["Ph", "Ph."]))
                       .replace("MG", r.choice(["M.G.", "M G", "Mahatma Gandhi"])))
+        if r.random() < 0.05:  # data-entry typo: drop or change one letter
+            k = int(r.integers(1, len(street) - 1))
+            street = street[:k] + (r.choice(list("AEIORST")) if r.random() < 0.5 else "") + street[k + 1:]
         no = r.choice([f"{a['no']},", f"No. {a['no']},", f"#{a['no']}", f"{a['no']}"])
         alt, _ = CITIES[a["city"]]
         city = alt if r.random() < 0.3 else a["city"]
@@ -155,9 +158,9 @@ class Simulator:
             "category": r.choice(CATEGORIES, n),
             "registration_date": old,
             "rate": r.lognormal(np.log(15), 0.7, n),       # invoices per year
-            "markup": np.where(r.random(n) < 0.06, r.uniform(0.12, 0.30, n),  # premium brands
+            "markup": np.where(r.random(n) < 0.08, r.uniform(0.12, 0.35, n),  # premium brands
                                r.normal(0.02, 0.05, n)),
-            "bid_propensity": r.lognormal(0, 1.3, n),             # some vendors bid a lot
+            "bid_propensity": r.lognormal(0, 1.5, n),             # some vendors bid a lot
             "scheme": "none", "group_id": "",
         })
         new = r.random(n) < c.frac_legit_new                # confounder: legit new suppliers
@@ -170,6 +173,7 @@ class Simulator:
         self.next_din = 10_000_000
         s["directors"] = [[self._new_director() for _ in range(r.integers(1, 4))] for _ in range(n)]
         s["near_limit"] = False
+        s["clustered"] = r.random(n) < 0.10                    # legit batch invoicing
         s["phantom_rate"] = 0.0
         s["complicit_buyer"] = None
         self.s = s
@@ -206,6 +210,7 @@ class Simulator:
                     s.at[i, "bank_account"] = acct
             n_grouped -= len(members)
         s["near_limit"] = r.random(len(s)) < c.frac_legit_near_limit
+        s["near_limit_rate"] = r.uniform(0.1, 0.4, len(s))
 
     # --------------------------------------------------------- fraud schemes
     def plant_fraud(self):
@@ -221,10 +226,13 @@ class Simulator:
             addr = self._new_address(unit=f"{r.integers(1, 20)}{r.choice(list('ABC'))}")
             acct = f"ACCT-{r.integers(10**9, 10**10)}"
             director = self._new_director()
+            newly_registered = r.random() < 0.5   # the other half use aged "shelf" companies
             for i in members:
                 s.at[i, "scheme"], s.at[i, "group_id"] = "shell_ring", f"R{g:02d}"
-                s.at[i, "registration_date"] = self._date(self.t0 - pd.Timedelta(days=250),
-                                                          self.t0 + pd.Timedelta(days=250), 1)[0]
+                s.at[i, "registration_date"] = (
+                    self._date(self.t0 - pd.Timedelta(days=250), self.t0 + pd.Timedelta(days=250), 1)[0]
+                    if newly_registered else
+                    self._date(pd.Timestamp("2010-01-01"), pd.Timestamp("2021-12-31"), 1)[0])
                 s.at[i, "buyers"] = [buyer] + list(r.choice(self.buyers["buyer_id"], 1))
                 s.at[i, "rate"] = r.lognormal(np.log(12), 0.5)
                 # fronts look clean (phantom_rate 0); others bill for missing goods
@@ -264,13 +272,15 @@ class Simulator:
             if n == 0:
                 continue
             dates = self._date(lo, self.t1, n)
+            if sup["clustered"]:  # several invoices on the same day, legitimately
+                dates = pd.DatetimeIndex(r.choice(dates[: max(1, n // 3)], n))
             buyers = list(sup["buyers"])
             p = None
             if sup["scheme"] == "shell_ring":
-                p = [0.8] + [0.2 / (len(buyers) - 1)] * (len(buyers) - 1)
+                p = [0.6] + [0.4 / (len(buyers) - 1)] * (len(buyers) - 1)
             elif sup["scheme"] == "split":
                 buyers = buyers + [sup["complicit_buyer"]]
-                p = [0.5 / (len(buyers) - 1)] * (len(buyers) - 1) + [0.5]
+                p = [0.65 / (len(buyers) - 1)] * (len(buyers) - 1) + [0.35]
             b = r.choice(buyers, n, p=p)
             prod = r.choice(self.cat_products[sup["category"]], n)
             mkt = self.market[prod].values
@@ -279,13 +289,13 @@ class Simulator:
             lim = self.limit[b].values
 
             if sup["scheme"] == "inflate":
-                hit = r.random(n) < r.uniform(0.3, 0.7)
-                price = np.where(hit, price * r.uniform(1.25, 1.6, n), price)
+                hit = r.random(n) < r.uniform(0.2, 0.5)
+                price = np.where(hit, price * r.uniform(1.12, 1.35, n), price)
             if sup["scheme"] == "cartel":
                 hit = b == cartel_buyer[i]
-                price = np.where(hit, price * r.uniform(1.10, 1.25, n), price)
+                price = np.where(hit, price * r.uniform(1.04, 1.15, n), price)
             if sup["near_limit"]:  # legit contract ceilings near the limit
-                hit = r.random(n) < 0.2
+                hit = r.random(n) < sup["near_limit_rate"]
                 qty = np.where(hit, np.maximum(1, np.round(lim * r.uniform(0.90, 0.99, n) / price)), qty)
 
             phantom = r.random(n) < sup["phantom_rate"]
@@ -296,7 +306,7 @@ class Simulator:
             if sup["scheme"] == "split":  # bursts of just-under-limit invoices
                 cb = sup["complicit_buyer"]
                 L = self.limit[cb]
-                for _ in range(r.poisson(max(1, n * 0.25))):
+                for _ in range(r.poisson(max(1, n * 0.10))):
                     d0 = self._date(lo, self.t1, 1)[0]
                     total, done = L * r.uniform(1.3, 3.5), 0.0
                     pr = r.choice(self.cat_products[sup["category"]])
@@ -359,15 +369,15 @@ class Simulator:
                 w = s.loc[cand, "bid_propensity"].values
                 pick = r.choice(cand, k, replace=False, p=w / w.sum())
                 add_tender(buyer, cat, date, est,
-                           [(i, est * r.uniform(0.88, 1.12) * (1 + s.at[i, "markup"])) for i in pick])
+                           [(i, est * r.uniform(0.85, 1.20) * (1 + s.at[i, "markup"])) for i in pick])
 
         for gid, buyer, cat, members in self.cartels:
             outsiders = np.setdiff1d(by_cat[cat], members)
-            for t, date in enumerate(sorted(self._date(self.t0, self.t1, int(r.integers(15, 30))))):
+            for t, date in enumerate(sorted(self._date(self.t0, self.t1, int(r.integers(8, 18))))):
                 est = r.lognormal(np.log(800_000), 0.6)
                 winner = members[t % len(members)]                  # rotation
-                win_bid = est * r.uniform(1.10, 1.25)
-                bb = [(winner, win_bid)] + [(i, win_bid * r.uniform(1.03, 1.15))
+                win_bid = est * r.uniform(0.98, 1.12)
+                bb = [(winner, win_bid)] + [(i, win_bid * r.uniform(1.02, 1.10))
                                             for i in members if i != winner]  # cover bids
                 if r.random() < 0.3:                                 # occasional honest rival
                     for i in r.choice(outsiders, int(r.integers(1, 3)), replace=False):
