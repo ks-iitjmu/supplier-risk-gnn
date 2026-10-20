@@ -1,1 +1,17 @@
+cat > .gitignore <<'EOF'
+# Generated data: rebuild with simulator/simulate.py and pipeline/spark_pipeline.py
+data/raw/*.csv
+data/ground_truth/*.csv
+data/bronze/
+data/silver/
+data/gold/
+spark-warehouse/
+
+# Generated model outputs
+results/*.parquet
+
+# Environment and caches
 .venv/
+__pycache__/
+*.pyc
+EOF
