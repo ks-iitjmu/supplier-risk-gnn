@@ -1,0 +1,26 @@
+model,mean,std,n_splits,metric
+GraphSAGE,0.4987,0.0615,5,PR-AUC
+GraphSAGE,0.8741,0.0232,5,ROC-AUC
+GraphSAGE,0.374,0.0387,5,Precision at top 10%
+GraphSAGE,0.6443,0.0483,5,Recall at top 10%
+GraphSAGE,0.6333,0.0908,5,Recall on fraud audits missed
+Neural net (no graph),0.4768,0.0402,5,PR-AUC
+Neural net (no graph),0.8695,0.0139,5,ROC-AUC
+Neural net (no graph),0.368,0.0202,5,Precision at top 10%
+Neural net (no graph),0.635,0.0235,5,Recall at top 10%
+Neural net (no graph),0.6393,0.0716,5,Recall on fraud audits missed
+Hybrid (XGBoost + GraphSAGE),0.5398,0.0982,5,PR-AUC
+Hybrid (XGBoost + GraphSAGE),0.9155,0.0104,5,ROC-AUC
+Hybrid (XGBoost + GraphSAGE),0.408,0.0435,5,Precision at top 10%
+Hybrid (XGBoost + GraphSAGE),0.7034,0.06,5,Recall at top 10%
+Hybrid (XGBoost + GraphSAGE),0.7252,0.08,5,Recall on fraud audits missed
+XGBoost (+ relational),0.5806,0.0592,5,PR-AUC
+XGBoost (+ relational),0.9086,0.0094,5,ROC-AUC
+XGBoost (+ relational),0.42,0.0253,5,Precision at top 10%
+XGBoost (+ relational),0.7246,0.0277,5,Recall at top 10%
+XGBoost (+ relational),0.7417,0.0858,5,Recall on fraud audits missed
+XGBoost (tabular),0.454,0.0892,5,PR-AUC
+XGBoost (tabular),0.8673,0.0289,5,ROC-AUC
+XGBoost (tabular),0.348,0.0671,5,Precision at top 10%
+XGBoost (tabular),0.6008,0.1128,5,Recall at top 10%
+XGBoost (tabular),0.5695,0.1617,5,Recall on fraud audits missed

@@ -1,0 +1,21 @@
+model,mean,std,n_splits,scheme
+GraphSAGE,0.6889,0.029,5,Shell rings
+GraphSAGE,0.744,0.1364,5,Cartels
+GraphSAGE,0.6081,0.0681,5,Split invoicing
+GraphSAGE,0.5491,0.1426,5,Price inflation
+Neural net (no graph),0.6273,0.0366,5,Shell rings
+Neural net (no graph),0.7655,0.1412,5,Cartels
+Neural net (no graph),0.5817,0.0226,5,Split invoicing
+Neural net (no graph),0.599,0.0641,5,Price inflation
+Hybrid (XGBoost + GraphSAGE),0.726,0.0321,5,Shell rings
+Hybrid (XGBoost + GraphSAGE),0.7465,0.2081,5,Cartels
+Hybrid (XGBoost + GraphSAGE),0.7711,0.0955,5,Split invoicing
+Hybrid (XGBoost + GraphSAGE),0.6161,0.1153,5,Price inflation
+XGBoost (+ relational),0.6524,0.0497,5,Shell rings
+XGBoost (+ relational),0.8085,0.1367,5,Cartels
+XGBoost (+ relational),0.8862,0.0738,5,Split invoicing
+XGBoost (+ relational),0.6112,0.1879,5,Price inflation
+XGBoost (tabular),0.51,0.1175,5,Shell rings
+XGBoost (tabular),0.6441,0.3199,5,Cartels
+XGBoost (tabular),0.8708,0.0725,5,Split invoicing
+XGBoost (tabular),0.5064,0.1913,5,Price inflation
